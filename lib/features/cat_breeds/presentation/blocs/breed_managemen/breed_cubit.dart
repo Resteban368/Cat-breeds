@@ -20,13 +20,19 @@ class BreedCubit extends Cubit<BreedState> {
 
   Future<void> onRefresh() async {
     if (state is BreedLoading) return;
+    Map<String, int> currentFilters = const {};
+    if (state is BreedLoaded) {
+      currentFilters = (state as BreedLoaded).activeFilters;
+    }
     emit(BreedLoading());
     final result = await getBreedsUseCase(GetBreedsUseCaseParameters(page: 0));
     result.fold(
       (failure) =>
           emit(BreedFailure(message: (failure as ServerFailure).message)),
       (breeds) {
-        emit(BreedLoaded(breeds: breeds, page: 0));
+        emit(
+          BreedLoaded(breeds: breeds, page: 0, activeFilters: currentFilters),
+        );
       },
     );
   }
@@ -46,10 +52,49 @@ class BreedCubit extends Cubit<BreedState> {
       (newBreeds) {
         final updatedBreeds = List<BreedEntity>.from(currentState.breeds)
           ..addAll(newBreeds);
-        emit(BreedLoaded(breeds: updatedBreeds, page: nextPage));
+        emit(
+          BreedLoaded(
+            breeds: updatedBreeds,
+            page: nextPage,
+            activeFilters: currentState.activeFilters,
+          ),
+        );
       },
     );
     _isLoading = false;
+  }
+
+  void updateFilter(String characteristic, int level) {
+    if (state is BreedLoaded) {
+      final currentState = state as BreedLoaded;
+      final newFilters = Map<String, int>.from(currentState.activeFilters);
+      if (level > 0) {
+        newFilters[characteristic] = level;
+      } else {
+        newFilters.remove(characteristic);
+      }
+
+      emit(
+        BreedLoaded(
+          breeds: currentState.breeds,
+          page: currentState.page,
+          activeFilters: newFilters,
+        ),
+      );
+    }
+  }
+
+  void clearFilters() {
+    if (state is BreedLoaded) {
+      final currentState = state as BreedLoaded;
+      emit(
+        BreedLoaded(
+          breeds: currentState.breeds,
+          page: currentState.page,
+          activeFilters: const {},
+        ),
+      );
+    }
   }
 
   Future<void> getBreedByName(String name) async {
@@ -64,7 +109,8 @@ class BreedCubit extends Cubit<BreedState> {
     result.fold(
       (failure) =>
           emit(BreedFailure(message: (failure as ServerFailure).message)),
-      (breeds) => emit(BreedLoaded(breeds: breeds, page: 0)),
+      (breeds) =>
+          emit(BreedLoaded(breeds: breeds, page: 0, activeFilters: const {})),
     );
   }
 }

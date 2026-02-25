@@ -18,7 +18,7 @@ class BodyComponent extends StatelessWidget {
               child: CustomGifWidget(gifName: 'loading'),
             );
           case BreedLoaded():
-            final breeds = state.breeds;
+            final breeds = state.filteredBreeds;
             if (breeds.isEmpty) {
               return SliverFillRemaining(
                 child: CustomGifWidget(gifName: 'error'),

@@ -8,18 +8,22 @@ class AppBarWidget extends StatelessWidget {
     required this.title,
     required this.bottom,
     this.fixed = false,
+    this.actions,
   });
 
   final double preferredSizeValue;
   final BuildTitleAppBarWidget title;
   final Widget bottom;
   final bool? fixed;
+  final List<Widget>? actions;
+
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
       ),
+      actions: actions,
       pinned: true,
       floating: !fixed!,
       snap: !fixed!,

@@ -35,7 +35,7 @@ class RemoteDataSourceImplementation implements RemoteDataSourceInterface {
 
   @override
   Future<List<BreedEntity>> getBreeds(int page) async {
-    final query = {'limit': '10', 'page': page.toString()};
+    final query = {'limit': '1', 'page': page.toString()};
 
     final url = Uri.https(
       environmentService.baseUrl,
@@ -43,6 +43,8 @@ class RemoteDataSourceImplementation implements RemoteDataSourceInterface {
       query,
     );
     final response = await _defaultRequest(url);
+    print('response: $response');
+
     return response;
   }
 

@@ -9,4 +9,5 @@ class EnvironmentService {
   String get baseUrl => 'api.thecatapi.com';
   String get getBreeds => 'v1/breeds';
   String get getBreedByName => 'v1/breeds/search';
+  String get getRandomBreed => 'v1/images/search';
 }

@@ -29,4 +29,14 @@ class BreedRepositoryImplementation implements BreedRepositoryInterface {
       return Left(ServerFailure(message: e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, BreedEntity>> getRandomBreed() async {
+    try {
+      final response = await remoteDataSourceInterface.getRandomBreed();
+      return Right(response);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
 }

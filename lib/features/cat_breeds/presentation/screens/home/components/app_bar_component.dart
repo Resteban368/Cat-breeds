@@ -2,6 +2,9 @@ import 'package:cats_breeds/core/theme/app_theme.dart';
 import 'package:cats_breeds/features/cat_breeds/presentation/screens/home/widgets/custom_search_app_bar_widget.dart';
 import 'package:cats_breeds/features/cat_breeds/presentation/widgets/custom_app_bar_widget.dart';
 import 'package:cats_breeds/features/cat_breeds/presentation/blocs/breed_managemen/breed_cubit.dart';
+import 'package:cats_breeds/features/cat_breeds/presentation/screens/detail_screen/components/body_component.dart'
+    as import_body_component;
+import 'package:cats_breeds/features/cat_breeds/presentation/widgets/custom_image_network_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,6 +18,10 @@ class AppBarComponent extends StatelessWidget {
       title: BuildTitleAppBarWidget(title: 'Cat Breeds'),
       actions: [
         IconButton(
+          icon: const Icon(Icons.shuffle),
+          onPressed: () => _showRandomBreedDialog(context),
+        ),
+        IconButton(
           icon: const Icon(Icons.filter_list),
           onPressed: () {
             _showFilterDialog(context);
@@ -23,6 +30,76 @@ class AppBarComponent extends StatelessWidget {
       ],
       bottom: BuildSearchAppBarWidget(),
     );
+  }
+
+  void _showRandomBreedDialog(BuildContext context) async {
+    // Show a loading dialog first
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Fetch random breed
+    final breedCubit = context.read<BreedCubit>();
+    final randomBreed = await breedCubit.fetchRandomBreed();
+
+    // Close loading dialog
+    if (context.mounted) Navigator.pop(context);
+
+    if (randomBreed != null && context.mounted) {
+      showDialog(
+        context: context,
+        builder: (dialogContext) {
+          return Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(randomBreed.name),
+                leading: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(dialogContext),
+                ),
+              ),
+              body: Column(
+                children: [
+                  Hero(
+                    tag: randomBreed.id,
+                    child: SizedBox(
+                      height: 300,
+                      width: double.infinity,
+                      child: CustomNetworkImageWidget(
+                        url: randomBreed.image.url,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomScrollView(
+                      slivers: [
+                        import_body_component.BodyComponent(
+                          breedEntity: randomBreed,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not fetch a random breed.')),
+      );
+    }
   }
 
   void _showFilterDialog(BuildContext context) {

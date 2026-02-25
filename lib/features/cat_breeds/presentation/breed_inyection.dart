@@ -5,13 +5,18 @@ import 'package:cats_breeds/features/cat_breeds/data/repositories/repository_imp
 import 'package:cats_breeds/features/cat_breeds/domain/repositories/repository_interface.dart';
 import 'package:cats_breeds/features/cat_breeds/domain/uses_cases/get_breed_by_name_use_case.dart';
 import 'package:cats_breeds/features/cat_breeds/domain/uses_cases/get_breeds_use_case.dart';
+import 'package:cats_breeds/features/cat_breeds/domain/uses_cases/get_random_breed_use_case.dart';
 import 'package:cats_breeds/features/cat_breeds/presentation/blocs/breed_managemen/breed_cubit.dart';
 
 Future<void> breedDependencyInjection() async {
   // ------------------------ providers ------------------------
   sl
     ..registerLazySingleton<BreedCubit>(
-      () => BreedCubit(getBreedsUseCase: sl(), getBreedByNameUseCase: sl()),
+      () => BreedCubit(
+        getBreedsUseCase: sl(),
+        getBreedByNameUseCase: sl(),
+        getRandomBreedUseCase: sl(),
+      ),
     )
     // ------------------------ use cases ------------------------
     ..registerLazySingleton<GetBreedsUseCase>(
@@ -19,6 +24,9 @@ Future<void> breedDependencyInjection() async {
     )
     ..registerLazySingleton<GetBreedByNameUseCase>(
       () => GetBreedByNameUseCase(breedRepositoryInterface: sl()),
+    )
+    ..registerLazySingleton<GetRandomBreedUseCase>(
+      () => GetRandomBreedUseCase(breedRepositoryInterface: sl()),
     )
     // ------------------------ repositories ------------------------
     ..registerLazySingleton<BreedRepositoryInterface>(

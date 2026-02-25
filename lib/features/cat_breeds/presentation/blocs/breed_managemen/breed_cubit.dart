@@ -4,18 +4,23 @@ import 'package:cats_breeds/core/errors/failures.dart';
 import 'package:cats_breeds/features/cat_breeds/domain/entities/breed_entity.dart';
 import 'package:cats_breeds/features/cat_breeds/domain/uses_cases/get_breed_by_name_use_case.dart';
 import 'package:cats_breeds/features/cat_breeds/domain/uses_cases/get_breeds_use_case.dart';
+import 'package:cats_breeds/features/cat_breeds/domain/uses_cases/get_random_breed_use_case.dart';
 import 'package:equatable/equatable.dart';
+
+import '../../../../../core/use_cases.dart/use_cases_interface.dart';
 
 part 'breed_state.dart';
 
 class BreedCubit extends Cubit<BreedState> {
   final GetBreedsUseCase getBreedsUseCase;
   final GetBreedByNameUseCase getBreedByNameUseCase;
+  final GetRandomBreedUseCase getRandomBreedUseCase;
   bool _isLoading = false;
 
   BreedCubit({
     required this.getBreedsUseCase,
     required this.getBreedByNameUseCase,
+    required this.getRandomBreedUseCase,
   }) : super(BreedInitial());
 
   Future<void> onRefresh() async {
@@ -112,5 +117,12 @@ class BreedCubit extends Cubit<BreedState> {
       (breeds) =>
           emit(BreedLoaded(breeds: breeds, page: 0, activeFilters: const {})),
     );
+  }
+
+  Future<BreedEntity?> fetchRandomBreed() async {
+    BreedEntity? selectedBreed;
+    final result = await getRandomBreedUseCase(NoParams());
+    result.fold((failure) => null, (breed) => selectedBreed = breed);
+    return selectedBreed;
   }
 }

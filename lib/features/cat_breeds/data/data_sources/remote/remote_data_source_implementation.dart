@@ -35,7 +35,7 @@ class RemoteDataSourceImplementation implements RemoteDataSourceInterface {
 
   @override
   Future<List<BreedEntity>> getBreeds(int page) async {
-    final query = {'limit': '1', 'page': page.toString()};
+    final query = {'limit': '10', 'page': page.toString()};
 
     final url = Uri.https(
       environmentService.baseUrl,
@@ -43,7 +43,6 @@ class RemoteDataSourceImplementation implements RemoteDataSourceInterface {
       query,
     );
     final response = await _defaultRequest(url);
-    print('response: $response');
 
     return response;
   }
@@ -58,5 +57,41 @@ class RemoteDataSourceImplementation implements RemoteDataSourceInterface {
     );
     final response = await _defaultRequest(url);
     return response;
+  }
+
+  @override
+  Future<BreedEntity> getRandomBreed() async {
+    final query = {'has_breeds': '1', 'limit': '1'};
+    final url = Uri.https(
+      environmentService.baseUrl,
+      environmentService.getRandomBreed,
+      query,
+    );
+    final headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': environmentService.apiKey,
+    };
+    final response = await cliente.get(url, headers: headers);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      if (data.isNotEmpty) {
+        final imageData = data.first as Map<String, dynamic>;
+        final breedsData = imageData['breeds'] as List<dynamic>;
+        if (breedsData.isNotEmpty) {
+          final breedMap = breedsData.first as Map<String, dynamic>;
+          // Acoplar la información de la imagen dentro del mapa de la raza para que el fromMap funcione
+          breedMap['image'] = {
+            'id': imageData['id'],
+            'url': imageData['url'],
+            'width': imageData['width'],
+            'height': imageData['height'],
+          };
+          return BreedModel.fromMap(breedMap);
+        }
+      }
+      throw ServerException(message: 'No breed found in the random image');
+    } else {
+      throw ServerException(message: response.body);
+    }
   }
 }
